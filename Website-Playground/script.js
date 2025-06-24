@@ -33,7 +33,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Smooth scrolling for anchor links
+    // Navigation active state and smooth scrolling
+    const navLinks = document.querySelectorAll('.main-nav .nav-link');
+    
+    // Handle navigation link clicks
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             const href = this.getAttribute('href');
@@ -42,8 +45,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 return;
             }
-            
+
             e.preventDefault();
+            
+            // Remove active class from all nav links
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            // Add active class to clicked nav link (if it's a nav link)
+            if (this.classList.contains('nav-link')) {
+                this.classList.add('active');
+            }
+            
             try {
                 const target = document.querySelector(href);
                 if (target) {
@@ -60,6 +72,37 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Set active nav link based on scroll position
+    const sections = document.querySelectorAll('section[id]');
+    
+    function updateActiveNavOnScroll() {
+        const scrollPosition = window.scrollY + 100; // Offset for header
+        
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.offsetHeight;
+            const sectionId = section.getAttribute('id');
+            
+            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                // Remove active class from all nav links
+                navLinks.forEach(link => link.classList.remove('active'));
+                
+                // Add active class to corresponding nav link
+                const activeNavLink = document.querySelector(`.main-nav .nav-link[href="#${sectionId}"]`);
+                if (activeNavLink) {
+                    activeNavLink.classList.add('active');
+                }
+            }
+        });
+    }
+    
+    // Throttled scroll event for performance
+    const throttledScrollHandler = throttle(updateActiveNavOnScroll, 100);
+    window.addEventListener('scroll', throttledScrollHandler);
+    
+    // Set initial active state
+    updateActiveNavOnScroll();
 
     // Counter animation for impact stats
     function animateCounters() {
@@ -144,12 +187,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Blog filtering system for content management integration
     const blogCards = document.querySelectorAll('.blog-card');
     const filterBtns = document.querySelectorAll('.blog-filters .filter-btn');
-    
+
     // Make blog tags clickable to show related content
     document.querySelectorAll('.blog-tag').forEach(tag => {
         tag.addEventListener('click', function() {
             const tagText = this.textContent.toLowerCase();
-            
+
             // Show modal with tag-specific content
             if (tagText === 'future of work') {
                 openTagModal('future-of-work');
@@ -159,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 openTagModal('digital-transformation');
             }
         });
-        
+
         // Add hover effect to show it's clickable
         tag.style.cursor = 'pointer';
         tag.addEventListener('mouseenter', function() {
@@ -171,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.boxShadow = 'none';
         });
     });
-    
+
     // Blog post filtering functionality
     filterBtns.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -179,17 +222,17 @@ document.addEventListener('DOMContentLoaded', function() {
             filterBtns.forEach(b => b.classList.remove('active'));
             // Add active class to clicked button
             this.classList.add('active');
-            
+
             const filterValue = this.getAttribute('data-category');
             let visibleCount = 0;
-            
+
             blogCards.forEach((card, index) => {
                 const matchesFilter = filterValue === 'all' || card.getAttribute('data-category') === filterValue;
-                
+
                 if (matchesFilter) {
                     card.style.display = 'block';
                     card.style.animation = 'fadeIn 0.5s ease-in';
-                    
+
                     // For "All Posts", apply load more logic (show only first 3)
                     if (filterValue === 'all') {
                         if (visibleCount >= 3) {
@@ -207,20 +250,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     card.classList.remove('load-more-hidden');
                 }
             });
-            
+
             // Update load more button and pagination
             const loadMoreBtn = document.querySelector('.load-more-btn');
             const paginationInfo = document.querySelector('.pagination-info span');
             const completeMessage = document.querySelector('.articles-complete-message');
-            
+
             if (completeMessage) {
                 completeMessage.remove();
             }
-            
+
             if (filterValue === 'all') {
                 const currentlyVisible = document.querySelectorAll('.blog-card:not(.load-more-hidden):not([style*="none"])').length;
                 paginationInfo.textContent = `Showing ${currentlyVisible} of ${visibleCount} articles`;
-                
+
                 if (visibleCount > 3) {
                     loadMoreBtn.style.display = 'inline-flex';
                     // Reset button to "Load More" state when filtering
@@ -242,16 +285,16 @@ document.addEventListener('DOMContentLoaded', function() {
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             let matchingCount = 0;
-            
+
             blogCards.forEach(card => {
                 const title = card.querySelector('h3').textContent.toLowerCase();
                 const description = card.querySelector('p').textContent.toLowerCase();
                 const tags = Array.from(card.querySelectorAll('.blog-tag')).map(tag => tag.textContent.toLowerCase());
-                
+
                 const matches = title.includes(searchTerm) || 
                               description.includes(searchTerm) || 
                               tags.some(tag => tag.includes(searchTerm));
-                
+
                 if (matches) {
                     card.style.display = 'block';
                     card.style.animation = 'fadeIn 0.5s ease-in';
@@ -262,16 +305,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     card.classList.remove('load-more-hidden');
                 }
             });
-            
+
             // Update pagination and hide load more when searching
             const loadMoreBtn = document.querySelector('.load-more-btn');
             const paginationInfo = document.querySelector('.pagination-info span');
             const completeMessage = document.querySelector('.articles-complete-message');
-            
+
             if (completeMessage) {
                 completeMessage.remove();
             }
-            
+
             if (searchTerm.trim() === '') {
                 // Reset to initial state when search is cleared
                 initializeBlogDisplay();
@@ -282,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadMoreBtn.onclick = loadMorePosts;
                 paginationInfo.textContent = `Found ${matchingCount} articles matching "${searchTerm}"`;
             }
-            
+
             console.log(`Found ${matchingCount} articles matching "${searchTerm}"`);
         });
     }
@@ -292,14 +335,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (blogNewsletterForm) {
         blogNewsletterForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const email = this.querySelector('input[type="email"]').value;
-            
+
             if (!email) {
                 alert('Please enter your email address');
                 return;
             }
-            
+
             // Integration point for email marketing services
             alert('Thank you for subscribing to our blog updates!');
             this.reset();
@@ -309,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Tag modal functionality for showing tag-specific content
     window.openTagModal = function(tagType) {
         let modalId, title, content;
-        
+
         switch(tagType) {
             case 'future-of-work':
                 modalId = 'future-of-work-modal';
@@ -336,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 };
                 break;
-                
+
             case 'technology-trends':
                 modalId = 'technology-trends-modal';
                 title = 'Technology Trends';
@@ -366,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 };
                 break;
-                
+
             case 'digital-transformation':
                 modalId = 'digital-transformation-modal';
                 title = 'Digital Transformation';
@@ -393,13 +436,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
                 break;
         }
-        
+
         // Create and show the modal
         createTagModal(modalId, title, content);
         document.getElementById(modalId).style.display = 'block';
         document.body.style.overflow = 'hidden';
     };
-    
+
     // Create tag modal dynamically
     function createTagModal(modalId, title, content) {
         // Remove existing modal if it exists
@@ -407,11 +450,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (existingModal) {
             existingModal.remove();
         }
-        
+
         const modal = document.createElement('div');
         modal.id = modalId;
         modal.className = 'modal';
-        
+
         modal.innerHTML = `
             <div class="modal-content blog-modal">
                 <span class="close" onclick="closeModal('${modalId}')">&times;</span>
@@ -430,13 +473,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             <h3>${section.title}</h3>
                             <p>${section.content}</p>
                         `).join('')}
-                        
+
                         <div class="blog-quote">
                             <blockquote>
                                 "Staying informed about these trends is crucial for professionals looking to remain competitive in the evolving digital landscape."
                             </blockquote>
                         </div>
-                        
+
                         <h3>Related Resources</h3>
                         <ul>
                             <li><a href="#programmes">Explore our training programmes</a></li>
@@ -447,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </article>
             </div>
         `;
-        
+
         document.body.appendChild(modal);
     }
 
@@ -457,12 +500,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const loadMoreBtn = document.querySelector('.load-more-btn');
         const paginationInfo = document.querySelector('.pagination-info span');
         const completeMessage = document.querySelector('.articles-complete-message');
-        
+
         // Remove completion message if it exists
         if (completeMessage) {
             completeMessage.remove();
         }
-        
+
         // Hide all posts beyond the first 3
         blogCards.forEach((card, index) => {
             if (index >= 3) {
@@ -471,11 +514,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 card.classList.remove('load-more-hidden');
             }
         });
-        
+
         // Update pagination info
         const visibleCount = Math.min(3, blogCards.length);
         paginationInfo.textContent = `Showing ${visibleCount} of ${blogCards.length} articles`;
-        
+
         // Show load more button if there are more than 3 posts and reset its state
         if (blogCards.length > 3) {
             loadMoreBtn.style.display = 'inline-flex';
@@ -493,22 +536,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const paginationInfo = document.querySelector('.pagination-info span');
         const allCards = document.querySelectorAll('.blog-card');
         const completeMessage = document.querySelector('.articles-complete-message');
-        
+
         if (hiddenCards.length > 0) {
             // Show all remaining hidden posts
             hiddenCards.forEach(card => {
                 card.classList.remove('load-more-hidden');
                 card.style.animation = 'fadeIn 0.5s ease-in';
             });
-            
+
             // Update pagination info
             const visibleCards = document.querySelectorAll('.blog-card:not(.load-more-hidden)');
             paginationInfo.textContent = `Showing ${visibleCards.length} of ${allCards.length} articles`;
-            
+
             // Change button to "Show Less" functionality
             loadMoreBtn.innerHTML = '<i class="fas fa-minus"></i> Show Less Articles';
             loadMoreBtn.onclick = showLessPosts;
-            
+
             // Remove completion message if it exists
             if (completeMessage) {
                 completeMessage.remove();
@@ -521,28 +564,28 @@ document.addEventListener('DOMContentLoaded', function() {
         const allCards = document.querySelectorAll('.blog-card');
         const loadMoreBtn = document.querySelector('.load-more-btn');
         const paginationInfo = document.querySelector('.pagination-info span');
-        
+
         // Hide all posts beyond the first 3
         allCards.forEach((card, index) => {
             if (index >= 3) {
                 card.classList.add('load-more-hidden');
             }
         });
-        
+
         // Update pagination info
         const visibleCards = document.querySelectorAll('.blog-card:not(.load-more-hidden)');
         paginationInfo.textContent = `Showing ${visibleCards.length} of ${allCards.length} articles`;
-        
+
         // Change button back to "Load More" functionality
         loadMoreBtn.innerHTML = '<i class="fas fa-plus"></i> Load More Articles';
         loadMoreBtn.onclick = loadMorePosts;
-        
+
         // Scroll to blog section to show the collapsed state
         const blogSection = document.getElementById('blog');
         if (blogSection) {
             const headerHeight = document.querySelector('.header').offsetHeight;
             const targetPosition = blogSection.offsetTop - headerHeight - 100;
-            
+
             window.scrollTo({
                 top: targetPosition,
                 behavior: 'smooth'
@@ -557,7 +600,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const heartIcon = this.querySelector('i');
             const countSpan = this.querySelector('span') || this;
             let currentCount = parseInt(countSpan.textContent.match(/\d+/)[0]);
-            
+
             if (heartIcon.classList.contains('fas')) {
                 // Unlike
                 heartIcon.classList.remove('fas');
@@ -571,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentCount++;
                 this.style.color = '#ef4444';
             }
-            
+
             countSpan.innerHTML = `<i class="${heartIcon.classList.contains('fas') ? 'fas' : 'far'} fa-heart"></i> ${currentCount}`;
         });
     });
@@ -589,7 +632,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function trackBlogView(postTitle) {
         // Integration point for analytics tracking
         console.log(`Blog post viewed: ${postTitle}`);
-        
+
         // Example Google Analytics tracking
         if (typeof gtag !== 'undefined') {
             gtag('event', 'blog_view', {
@@ -603,7 +646,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function trackBlogSearch(searchTerm) {
         // Integration point for search analytics
         console.log(`Blog search performed: ${searchTerm}`);
-        
+
         if (typeof gtag !== 'undefined') {
             gtag('event', 'blog_search', {
                 'event_category': 'Blog',
@@ -623,26 +666,26 @@ document.addEventListener('DOMContentLoaded', function() {
         if (shareUrls[platform]) {
             // Track social sharing for analytics
             console.log(`Blog post shared on ${platform}: ${text}`);
-            
+
             if (typeof gtag !== 'undefined') {
                 gtag('event', 'blog_share', {
                     'event_category': 'Blog',
                     'event_label': `${platform}: ${text}`
                 });
             }
-            
+
             window.open(shareUrls[platform], '_blank', 'width=600,height=400');
         }
     };
 
     // Content Management System Integration Points
     // This section would integrate with headless CMS APIs
-    
+
     // Function to fetch blog posts from CMS
     async function fetchBlogPosts(page = 1, category = 'all', searchTerm = '') {
         // Integration point for CMS API calls
         console.log(`Fetching blog posts: page ${page}, category: ${category}, search: ${searchTerm}`);
-        
+
         // Example API structure for CMS integration
         /*
         try {
@@ -660,12 +703,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderBlogPosts(posts) {
         // This would render blog posts from CMS data
         console.log('Rendering blog posts from CMS');
-        
+
         // Example implementation for dynamic rendering
         /*
         const blogGrid = document.getElementById('blog-posts-grid');
         blogGrid.innerHTML = '';
-        
+
         posts.forEach(post => {
             const blogCard = createBlogCardElement(post);
             blogGrid.appendChild(blogCard);

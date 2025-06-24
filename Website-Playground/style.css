@@ -57,23 +57,23 @@ p {
 }
 
 .btn-primary {
-    background-color: #2563eb;
+    background-color: #6115D0;
     color: white;
 }
 
 .btn-primary:hover {
-    background-color: #1d4ed8;
+    background-color: #5012B8;
     transform: translateY(-2px);
 }
 
 .btn-secondary {
     background-color: transparent;
-    color: #2563eb;
-    border: 2px solid #2563eb;
+    color: #6115D0;
+    border: 2px solid #6115D0;
 }
 
 .btn-secondary:hover {
-    background-color: #2563eb;
+    background-color: #6115D0;
     color: white;
 }
 
@@ -694,7 +694,7 @@ section {
 /* Blog Section */
 /* Enhanced blog section with featured posts, improved imagery, and CMS integration support */
 .blog {
-    background-color: #FFF0F5;
+    background-color: #F4E4E6;
     padding: 100px 0;
 }
 
@@ -1107,7 +1107,7 @@ section {
 /* Blog Newsletter Signup */
 /* Email marketing integration for content subscribers */
 .blog-newsletter {
-    background: linear-gradient(135deg, #F25251, #e63946);
+    background: linear-gradient(135deg, #E57373, #E57373);
     border-radius: 16px;
     padding: 3rem;
     text-align: center;
@@ -1410,8 +1410,15 @@ section {
 }
 
 .footer-logo {
-    height: 40px;
+    height: 50px;
+    width: auto;
     margin-bottom: 1rem;
+    filter: brightness(0) invert(1);
+    transition: filter 0.3s ease;
+}
+
+.footer-logo:hover {
+    filter: brightness(0) invert(1) opacity(0.8);
 }
 
 .footer-section h4 {
@@ -2198,18 +2205,6 @@ section {
     color: #1e293b;
     margin-bottom: 15px;
     position: relative;
-}
-
-.section-title::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 4px;
-    background: linear-gradient(135deg, #F25251, #ff6b6a);
-    border-radius: 2px;
 }
 
 .section-subtitle {
